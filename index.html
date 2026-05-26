@@ -2,12 +2,12 @@
 <html>
 <body>
     <h1>Videoke Remote</h1>
-    <input type="text" id="songUrl" placeholder="Enter YouTube URL">
-    <button onclick="addSong()">Add to Queue</button>
+    <input type="text" id="urlInput" placeholder="Enter YouTube URL">
+    <button onclick="addToQueue()">Add to Queue</button>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
         const firebaseConfig = {
             databaseURL: "https://forunethub-videokepro-default-rtdb.firebaseio.com/"
@@ -15,15 +15,18 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        window.addSong = function() {
-            const url = document.getElementById('songUrl').value;
-            // Mag-a-add ng kanta sa loob ng VID-9982 room
-            push(ref(db, 'rooms/VID-9982/queue'), {
-                url: url,
-                status: 'pending'
-            });
-            alert("Kanta na-add na sa queue!");
-        }
+        window.addToQueue = function() {
+            const url = document.getElementById("urlInput").value;
+            if (url) {
+                const newSongRef = push(ref(db, 'rooms/VID-9982/queue'));
+                set(newSongRef, {
+                    url: url,
+                    status: 'pending'
+                });
+                alert("Kanta added to queue!");
+                document.getElementById("urlInput").value = "";
+            }
+        };
     </script>
 </body>
 </html>
