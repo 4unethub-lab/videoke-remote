@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <div id="player"></div>
+    <h2 id="songTitle">Walang kanta sa pila</h2>
+    <button onclick="nextSong()">NEXT SONG</button>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
+        const db = getDatabase(initializeApp({ databaseURL: "https://forunethub-videokepro-default-rtdb.firebaseio.com/" }));
+        let queue = [];
+        let currentIndex = 0;
+
+        // Kunin ang pila mula sa Firebase
+        onValue(ref(db, 'rooms/VID-9982/queue'), (snapshot) => {
+            queue = [];
+            snapshot.forEach((child) => {
+                if (child.val().status === 'queued' || child.val().status === 'pending') {
+                    queue.push({ id: child.key, url: child.val().url });
+                }
+            });
+        });
+
+        window.nextSong = function() {
+            if (queue.length > 0) {
+                const song = queue[0];
+                const videoId = song.url.split('v=')[1];
+                document.getElementById('player').innerHTML = `<iframe width="640" height="360" src="https://www.youtube.com/embed/${videoId}?autoplay=1"></iframe>`;
+                
+                // I-update sa Firebase na played na
+                update(ref(db, `rooms/VID-9982/queue/${song.id}`), { status: 'played' });
+                queue.shift();
+            }
+        };
+    </script>
+</body>
+</html>
